@@ -24,14 +24,18 @@ TMDB-Movies-INSY-674/
 │   └── app_mockup.py                   # Streamlit UI prototype
 ├── data/
 │   ├── movies_2010_2025.csv            # Raw extracted dataset
-│   └── data_cleaned_engineered.csv     # Cleaned + feature-engineered dataset
+│   ├── data_cleaned_engineered.csv     # Cleaned + feature-engineered dataset
+│   ├── data_advanced_features.csv      # (branch) Advanced features dataset
+│   ├── data_quality_validated.csv      # (branch) Quality-validated dataset
+│   └── data_semi_supervised_predictions.csv # (branch) Model predictions
 ├── EDA/
 │   └── EDA.ipynb                       # Exploratory Data Analysis notebook
 └── notebooks/
     ├── DataExtraction.ipynb            # TMDB API data extraction pipeline
     ├── FeatureEngineering.ipynb        # Base feature engineering & cleaning
     ├── AdvancedFeatureEngineering.ipynb # (branch) Advanced feature engineering
-    └── DataQualityValidation.ipynb     # (branch) Data quality & outlier treatment
+    ├── DataQualityValidation.ipynb     # (branch) Data quality & outlier treatment
+    └── SemiSupervisedModel.ipynb       # (branch) Semi-supervised ML model
 ```
 
 ---
@@ -44,6 +48,7 @@ TMDB-Movies-INSY-674/
 | `Maria` | Contributor branch | Exists on remote |
 | `feature/advanced-feature-engineering` | Adds advanced feature engineering notebook | **Pushed to GitHub** |
 | `feature/data-quality-validation` | Adds data quality validation & outlier treatment notebook | **Pushed to GitHub** |
+| `feature/semi-supervised-model` | Semi-supervised ML model for revenue tier prediction | **Pushed to GitHub** |
 
 ---
 
@@ -124,6 +129,30 @@ TMDB-Movies-INSY-674/
 
 **Output:** `data/data_quality_validated.csv`
 
+### 5.3 Semi-Supervised Model (`feature/semi-supervised-model`)
+
+**Notebook:** `notebooks/SemiSupervisedModel.ipynb`
+
+**Motivation:** Revenue is 72% missing — a perfect scenario for semi-supervised learning, which leverages both labeled and unlabeled data.
+
+**Target:** Revenue Tier classification (Low / Medium / High / Blockbuster) based on quartiles of known revenue.
+
+| # | Model | Type | Accuracy | Weighted F1 |
+|---|-------|------|----------|-------------|
+| 1 | Gradient Boosting | Supervised (baseline) | 61.4% | 61.6% |
+| 2 | **Self-Training Classifier** | **Semi-Supervised** | **64.8%** | **64.7%** |
+| 3 | Label Propagation | Semi-Supervised | 51.7% | 51.9% |
+| 4 | Label Spreading | Semi-Supervised | 52.3% | 52.7% |
+
+**Key Results:**
+- Self-Training outperformed the supervised baseline by **+3.4% accuracy**, demonstrating the value of leveraging unlabeled data
+- The model iteratively pseudo-labeled 6,628 unlabeled samples across 12 iterations
+- Top predictive features: `vote_count`, `log_budget`, `budget`, `vote_average`, `popularity`
+- Generated revenue tier predictions for **6,686 previously unlabeled movies** with 99.2% average confidence
+- Includes confusion matrices, feature importance charts, and confidence distribution visualizations
+
+**Output:** `data/data_semi_supervised_predictions.csv`
+
 ---
 
 ## 6. Commit History Summary
@@ -144,15 +173,16 @@ TMDB-Movies-INSY-674/
 | `d6189be` | main | Feature engineering draft |
 | `736b2dd` | feature/advanced-feature-engineering | Advanced feature engineering notebook |
 | `cdceb98` | feature/data-quality-validation | Data quality validation notebook |
+| `b96905f` | feature/semi-supervised-model | Semi-supervised model: Self-Training, Label Propagation, Label Spreading |
 
 ---
 
 ## 7. Next Steps
 
 - [ ] Merge feature branches into `main` via Pull Requests
-- [ ] Build classification model (predict top-20% popularity — hit vs. not)
+- [x] Build semi-supervised classification model (revenue tier prediction)
 - [ ] Build regression model (predict continuous popularity score)
-- [ ] Evaluate models (ROC-AUC, MAE, RMSE, R²)
+- [ ] Evaluate additional models (ROC-AUC, MAE, RMSE, R²)
 - [ ] Connect trained models to the Streamlit app (replace mock predictor)
 - [ ] Final documentation and presentation
 
@@ -164,6 +194,7 @@ TMDB-Movies-INSY-674/
 |----------|-------|
 | Language | Python 3.x |
 | Data | Pandas, NumPy |
+| ML | Scikit-learn (GradientBoosting, SelfTraining, LabelPropagation, LabelSpreading) |
 | Visualization | Matplotlib, Seaborn |
 | API | TMDB API (requests) |
 | App | Streamlit |
